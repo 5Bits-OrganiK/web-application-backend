@@ -1,5 +1,6 @@
 package _5bits.organik.platform.iam.domain.model.aggregates;
 
+import _5bits.organik.platform.iam.domain.model.commands.CreateUserCommand;
 import _5bits.organik.platform.iam.domain.model.valueobjects.EmailAddress;
 import _5bits.organik.platform.iam.domain.model.valueobjects.FullName;
 import _5bits.organik.platform.iam.domain.model.valueobjects.MinimarketId;
@@ -60,4 +61,15 @@ public class User {
     @Column(nullable = false)
     @LastModifiedDate
     private Instant updatedAt;
+
+    protected User() {}
+
+    public User(CreateUserCommand command) {
+        this.fullName = command.fullName();
+        this.email = command.email();
+        this.role = command.role();
+        this.status = UserStatus.PENDING;
+        this.minimarketId = command.minimarketId();
+        this.supplierId = command.supplierId();
+    }
 }
