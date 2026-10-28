@@ -1,5 +1,6 @@
 package _5bits.organik.platform.inventory.domain.model.aggregates;
 
+import _5bits.organik.platform.inventory.domain.model.commands.CreateOfferCommand;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.OfferPrice;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.StockLotId;
 import _5bits.organik.platform.inventory.infrastructure.persistence.jpa.converters.OfferPriceAttributeConverter;
@@ -44,6 +45,13 @@ public class Offer {
     private Instant updatedAt;
 
     protected Offer() {}
+
+    public Offer(CreateOfferCommand command) {
+        this.stockLotId = command.stockLotId();
+        this.price = command.price();
+        this.startsOn = command.startsOn();
+        this.endsOn = command.endsOn();
+    }
 
     public boolean isActiveOn(LocalDate date) {
         return !date.isBefore(startsOn) && !date.isAfter(endsOn);
