@@ -56,7 +56,7 @@ public class UserCommandServiceImpl implements UserCommandService {
 
     private boolean isDuplicateUserViolation(DataIntegrityViolationException exception) {
         Throwable violationCause = exception;
-        while (vioationCause != null) {
+        while (violationCause != null) {
             String message = violationCause.getMessage();
             if (message != null && message.contains(DUPLICATE_USER_CONSTRAINT)) return true;
             violationCause = violationCause.getCause();
