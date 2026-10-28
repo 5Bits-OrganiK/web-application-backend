@@ -1,5 +1,6 @@
 package _5bits.organik.platform.inventory.domain.model.aggregates;
 
+import _5bits.organik.platform.inventory.domain.model.commands.CreateStockLotCommand;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.ExpirationDate;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.LotCode;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.MinimarketId;
@@ -64,6 +65,15 @@ public class StockLot {
     private Instant updatedAt;
 
     protected StockLot() {}
+
+    public StockLot(CreateStockLotCommand command) {
+        this.minimarketId = command.minimarketId();
+        this.productId = command.productId();
+        this.lotCode = command.lotCode();
+        this.quantity = command.quantity();
+        this.minimumStock = command.minimumStock();
+        this.expirationDate = command.expirationDate();
+    }
 
     public boolean isLowStock() {
         return quantity.isLessThanOrEqualTo(minimumStock);
