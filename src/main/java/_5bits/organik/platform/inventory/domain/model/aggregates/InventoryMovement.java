@@ -1,5 +1,6 @@
 package _5bits.organik.platform.inventory.domain.model.aggregates;
 
+import _5bits.organik.platform.inventory.domain.model.commands.RegisterInventoryMovementCommand;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.MovementReason;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.MovementType;
 import _5bits.organik.platform.inventory.domain.model.valueobjects.Quantity;
@@ -43,4 +44,11 @@ public class InventoryMovement {
     private Instant createdAt;
 
     protected InventoryMovement() {}
+
+    public InventoryMovement(RegisterInventoryMovementCommand command) {
+        this.stockLotId = command.stockLotId();
+        this.type = command.type();
+        this.quantity = command.quantity();
+        this.reason = command.reason();
+    }
 }
