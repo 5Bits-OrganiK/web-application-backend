@@ -1,0 +1,299 @@
+@startuml
+' OrganiK Platform Class Diagram
+
+skinparam classAttributeIconSize 0
+
+package "iam" {
+  package "interfaces.rest" {
+    class UsersController <<rest-controller>> {
+      +createUser(CreateUserResource) : ResponseEntity<?>
+      +getUserById(Long) : ResponseEntity<?>
+      +getUsersWithParameters(String, String) : ResponseEntity<?>
+    }
+
+    package "interfaces.rest.resources" {
+      class CreateUserResource <<request-resource>> {
+        +String fullName
+        +String email
+        +String role
+        +String minimarketId
+        +String supplierId
+      }
+      class UserResource <<response-resource>> {
+        +Long id
+        +String fullName
+        +String email
+        +String role
+        +String status
+        +String minimarketId
+        +String supplierId
+      }
+    }
+
+    package "interfaces.rest.transform" {
+      class CreateUserCommandFromResourceAssembler <<translator>> {
+        +toCommandFromResource(CreateUserResource) : CreateUserCommand
+      }
+      class IamValueObjectFromStringAssembler <<translator>> {
+        +toFullNameFromString(String) : FullName
+        +toEmailAddressFromString(String) : EmailAddress
+        +toRoleFromString(String) : Role
+        +toMinimarketIdFromString(String) : MinimarketId
+        +toSupplierIdFromString(String) : SupplierId
+      }
+      class UserResourceFromEntityAssembler <<translator>> {
+        +toResourceFromEntity(User) : UserResource
+      }
+      class ResponseEntityFromUserCommandResultAssembler <<translator>> {
+        +toResponseEntityFromResult(Result<User, UserCommandFailure>, MessageSource) : ResponseEntity<?>
+      }
+      class ResponseEntityFromUserQueryResultAssembler <<translator>> {
+        +toResponseEntityFromUser(User) : ResponseEntity<?>
+        +toResponseEntityFromList(List<User>) : ResponseEntity<?>
+        +badRequest(MessageSource, String, Object...) : ResponseEntity<ProblemDetail>
+        +notFound(MessageSource, String, Object...) : ResponseEntity<ProblemDetail>
+      }
+    }
+  }
+
+  package "application.commandservices" {
+    interface UserCommandService <<application-service>> {
+      +handle(CreateUserCommand) : Result<User, UserCommandFailure>
+    }
+    interface UserCommandFailure <<failure>> {
+      +messageKey() : String
+    }
+    class "UserCommandFailure.Duplicate" as UserCommandFailureDuplicate <<failure>> {
+      +messageKey() : String
+    }
+  }
+
+  package "application.queryservices" {
+    interface UserQueryService <<application-service>> {
+      +handle(GetAllUsersByMinimarketIdQuery) : List<User>
+      +handle(GetUserByIdQuery) : Optional<User>
+      +handle(GetUserByEmailQuery) : Optional<User>
+    }
+  }
+
+  package "application.internal.commandservices" {
+    class UserCommandServiceImpl <<application-service>> {
+      +handle(CreateUserCommand) : Result<User, UserCommandFailure>
+      -duplicateResult() : Result<User, UserCommandFailure>
+      -isDuplicateUserViolation(DataIntegrityViolationException) : boolean
+    }
+  }
+
+  package "application.internal.queryservices" {
+    class UserQueryServiceImpl <<application-service>> {
+      +handle(GetAllUsersByMinimarketIdQuery) : List<User>
+      +handle(GetUserByIdQuery) : Optional<User>
+      +handle(GetUserByEmailQuery) : Optional<User>
+    }
+  }
+
+  package "domain.model.aggregates" {
+    class User <<aggregate-root>> {
+      +EMAIL_UNIQUE_CONSTRAINT : String
+      -Long id
+      -FullName fullName
+      -EmailAddress email
+      -Role role
+      -UserStatus status
+      -MinimarketId minimarketId
+      -SupplierId supplierId
+      -Instant createdAt
+      -Instant updatedAt
+      +User(CreateUserCommand)
+      +getId() : Long
+      +getFullName() : FullName
+      +getEmail() : EmailAddress
+      +getRole() : Role
+      +getStatus() : UserStatus
+      +getMinimarketId() : MinimarketId
+      +getSupplierId() : SupplierId
+      +getCreatedAt() : Instant
+      +getUpdatedAt() : Instant
+    }
+  }
+
+  package "domain.model.commands" {
+    class CreateUserCommand <<command>> {
+      +FullName fullName
+      +EmailAddress email
+      +Role role
+      +MinimarketId minimarketId
+      +SupplierId supplierId
+    }
+  }
+
+  package "domain.model.queries" {
+    class GetAllUsersByMinimarketIdQuery <<query>> {
+      +MinimarketId minimarketId
+    }
+    class GetUserByIdQuery <<query>> {
+      +Long id
+    }
+    class GetUserByEmailQuery <<query>> {
+      +EmailAddress email
+    }
+  }
+
+  package "domain.model.valueobjects" {
+    class FullName <<value-object>> {
+      +String value
+    }
+    class EmailAddress <<value-object>> {
+      +String value
+    }
+    class MinimarketId <<value-object>> {
+      +String value
+    }
+    class SupplierId <<value-object>> {
+      +String value
+    }
+    enum Role <<value-object>> {
+      ADMINISTRATOR
+      OPERATOR
+      SUPPLIER
+    }
+    enum UserStatus <<value-object>> {
+      PENDING
+      ACCEPTED
+    }
+  }
+
+  package "infrastructure.persistence.jpa" {
+    interface UserRepository <<spring-data-repository>> {
+      +findAllByMinimarketId(MinimarketId) : List<User>
+      +existsByEmail(EmailAddress) : boolean
+      +findByEmail(EmailAddress) : Optional<User>
+    }
+    interface "JpaRepository<User, Long>" as JpaRepository <<Spring Data>>
+
+    class FullNameAttributeConverter <<jpa-converter>> {
+      +convertToDatabaseColumn(FullName) : String
+      +convertToEntityAttribute(String) : FullName
+    }
+    class EmailAddressAttributeConverter <<jpa-converter>> {
+      +convertToDatabaseColumn(EmailAddress) : String
+      +convertToEntityAttribute(String) : EmailAddress
+    }
+    class MinimarketIdAttributeConverter <<jpa-converter>> {
+      +convertToDatabaseColumn(MinimarketId) : String
+      +convertToEntityAttribute(String) : MinimarketId
+    }
+    class SupplierIdAttributeConverter <<jpa-converter>> {
+      +convertToDatabaseColumn(SupplierId) : String
+      +convertToEntityAttribute(String) : SupplierId
+    }
+  }
+}
+
+package "shared" {
+  package "application.result" {
+    interface "Result<T, E>" as Result <<sealed-result>> {
+      +success(T) : Result<T, E>
+      +failure(E) : Result<T, E>
+      +isSuccess() : boolean
+      +isFailure() : boolean
+      +success() : Optional<T>
+      +failure() : Optional<E>
+      +fold(Function<T, R>, Function<E, R>) : R
+    }
+    class "Result.Success<T, E>" as ResultSuccess <<result-variant>> {
+      +T value
+    }
+    class "Result.Failure<T, E>" as ResultFailure <<result-variant>> {
+      +E error
+    }
+  }
+
+  package "infrastructure.persistence.jpa.strategy" {
+    class SnakeCasePhysicalNamingStrategy <<hibernate-strategy>> {
+      +toPhysicalCatalogName(Identifier, JdbcEnvironment) : Identifier
+      +toPhysicalSchemaName(Identifier, JdbcEnvironment) : Identifier
+      +toPhysicalTableName(Identifier, JdbcEnvironment) : Identifier
+      +toPhysicalSequenceName(Identifier, JdbcEnvironment) : Identifier
+      +toPhysicalColumnName(Identifier, JdbcEnvironment) : Identifier
+      -toSnakeCase(Identifier) : Identifier
+      -toPlural(Identifier) : Identifier
+    }
+  }
+}
+
+' Application and interface dependencies
+UsersController --> UserCommandService : invokes
+UsersController --> UserQueryService : invokes
+UsersController ..> CreateUserResource : accepts
+UsersController --> CreateUserCommandFromResourceAssembler : uses
+UsersController --> IamValueObjectFromStringAssembler : uses
+UsersController --> ResponseEntityFromUserCommandResultAssembler : uses
+UsersController --> ResponseEntityFromUserQueryResultAssembler : uses
+
+UserCommandServiceImpl ..|> UserCommandService : implements
+UserQueryServiceImpl ..|> UserQueryService : implements
+UserCommandFailureDuplicate ..|> UserCommandFailure : implements
+UserCommandService --> Result : returns
+UserCommandService --> UserCommandFailure : returns
+UserCommandServiceImpl --> UserRepository : uses
+UserQueryServiceImpl --> UserRepository : uses
+UserCommandServiceImpl --> User : creates
+UserCommandServiceImpl --> Result : returns
+UserCommandServiceImpl --> UserCommandFailure : returns
+UserQueryService --> User : returns
+UserQueryServiceImpl --> User : returns
+
+' HTTP mapping
+CreateUserCommandFromResourceAssembler ..> CreateUserResource : reads
+CreateUserCommandFromResourceAssembler --> CreateUserCommand : creates
+IamValueObjectFromStringAssembler --> FullName : creates
+IamValueObjectFromStringAssembler --> EmailAddress : creates
+IamValueObjectFromStringAssembler --> Role : creates
+IamValueObjectFromStringAssembler --> MinimarketId : creates
+IamValueObjectFromStringAssembler --> SupplierId : creates
+ResponseEntityFromUserCommandResultAssembler --> Result : maps
+ResponseEntityFromUserCommandResultAssembler --> UserCommandFailure : maps
+ResponseEntityFromUserCommandResultAssembler --> UserResourceFromEntityAssembler : uses
+ResponseEntityFromUserQueryResultAssembler --> UserResourceFromEntityAssembler : uses
+UserResourceFromEntityAssembler ..> User : reads
+UserResourceFromEntityAssembler --> UserResource : creates
+
+' Domain model and persistence mapping
+User --> CreateUserCommand : constructed from
+User --> FullName : contains
+User --> EmailAddress : contains
+User --> Role : contains
+User --> UserStatus : contains
+User --> MinimarketId : contains
+User --> SupplierId : contains
+CreateUserCommand --> FullName : contains
+CreateUserCommand --> EmailAddress : contains
+CreateUserCommand --> Role : contains
+CreateUserCommand --> MinimarketId : contains
+CreateUserCommand --> SupplierId : contains
+GetAllUsersByMinimarketIdQuery --> MinimarketId : contains
+GetUserByEmailQuery --> EmailAddress : contains
+UserRepository --> User : persists
+UserRepository --|> JpaRepository : extends
+UserRepository --> EmailAddress : queries by
+UserRepository --> MinimarketId : queries by
+FullNameAttributeConverter ..> FullName : converts
+EmailAddressAttributeConverter ..> EmailAddress : converts
+MinimarketIdAttributeConverter ..> MinimarketId : converts
+SupplierIdAttributeConverter ..> SupplierId : converts
+Result ..> ResultSuccess : permits
+Result ..> ResultFailure : permits
+
+note bottom
+  The REST controller delegates use cases to application services.
+  Application implementations coordinate repository access and return
+  domain aggregates or typed command failures. REST translators map
+  those outcomes to HTTP resources and ProblemDetail responses.
+  User enforces the unique email persistence constraint.
+  The suppliers, requisition, procurements and conservation bounded contexts
+  currently contain only their domain and persistence mapping; they are added
+  to this diagram as their application and interface layers are completed.
+end note
+
+@enduml
