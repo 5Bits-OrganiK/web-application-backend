@@ -6,4 +6,3 @@ import _5bits.organik.platform.procurements.domain.model.commands.CreateShipment
 public interface ShipmentOrderCommandService {
     ShipmentOrder handle(CreateShipmentOrderCommand command);
 }
-x
