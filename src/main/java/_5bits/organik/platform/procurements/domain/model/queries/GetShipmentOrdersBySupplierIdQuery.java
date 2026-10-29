@@ -9,3 +9,4 @@ public record GetShipmentOrdersBySupplierIdQuery(SupplierId supplierId) {
         }
     }
 }
+x
