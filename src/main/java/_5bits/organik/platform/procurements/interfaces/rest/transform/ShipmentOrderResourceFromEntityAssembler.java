@@ -29,3 +29,4 @@ public final class ShipmentOrderResourceFromEntityAssembler {
                 entity.getUpdatedAt());
     }
 }
+x
