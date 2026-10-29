@@ -13,3 +13,4 @@ public interface ShipmentOrderQueryService {
     List<ShipmentOrder> handle(GetShipmentOrdersBySupplierIdQuery query);
     List<ShipmentOrder> handle(GetShipmentOrdersByMinimarketIdQuery query);
 }
+x
