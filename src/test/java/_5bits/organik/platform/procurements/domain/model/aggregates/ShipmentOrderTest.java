@@ -38,4 +38,3 @@ class ShipmentOrderTest {
         assertNull(order.getDecidedBy());
     }
 }
-x
