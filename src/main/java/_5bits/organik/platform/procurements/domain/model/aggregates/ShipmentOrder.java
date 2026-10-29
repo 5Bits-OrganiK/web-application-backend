@@ -1,6 +1,7 @@
 package _5bits.organik.platform.procurements.domain.model.aggregates;
 
 import _5bits.organik.platform.procurements.domain.model.entities.ShipmentOrderLine;
+import _5bits.organik.platform.procurements.domain.model.commands.CreateShipmentOrderCommand;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.MinimarketId;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.OrderStatus;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.RejectionReason;
@@ -59,4 +60,15 @@ public class ShipmentOrder {
     @Column(nullable = false)
     @LastModifiedDate
     private Instant updatedAt;
+
+    protected ShipmentOrder() {}
+
+    public ShipmentOrder(CreateShipmentOrderCommand command) {
+        this.supplierId = command.supplierId();
+        this.minimarketId = command.minimarketId();
+        this.lines = command.lines().stream()
+                .map(ShipmentOrderLine::new)
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+        this.status = OrderStatus.PENDING;
+    }
 }

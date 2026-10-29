@@ -1,5 +1,6 @@
 package _5bits.organik.platform.procurements.domain.model.entities;
 
+import _5bits.organik.platform.procurements.domain.model.commands.CreateShipmentOrderCommand;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.LotCode;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.ProductId;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.Quantity;
@@ -32,4 +33,13 @@ public class ShipmentOrderLine {
 
     @Column(nullable = false)
     private LocalDate expiresOn;
+
+    protected ShipmentOrderLine() {}
+
+    public ShipmentOrderLine(CreateShipmentOrderCommand.Line line) {
+        this.productId = line.productId();
+        this.quantity = line.quantity();
+        this.lotCode = line.lotCode();
+        this.expiresOn = line.expiresOn();
+    }
 }
