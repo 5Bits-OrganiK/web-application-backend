@@ -38,4 +38,3 @@ public final class ResponseEntityFromShipmentOrderQueryResultAssembler {
                 .body(ProblemDetail.forStatusAndDetail(status, detail));
     }
 }
-x
