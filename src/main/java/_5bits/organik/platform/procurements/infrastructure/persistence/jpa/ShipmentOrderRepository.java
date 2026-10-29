@@ -13,4 +13,3 @@ public interface ShipmentOrderRepository extends JpaRepository<ShipmentOrder, Lo
     List<ShipmentOrder> findAllBySupplierId(SupplierId supplierId);
     List<ShipmentOrder> findAllByMinimarketId(MinimarketId minimarketId);
 }
-x
