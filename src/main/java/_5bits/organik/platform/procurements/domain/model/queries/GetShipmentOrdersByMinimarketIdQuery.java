@@ -9,3 +9,4 @@ public record GetShipmentOrdersByMinimarketIdQuery(MinimarketId minimarketId) {
         }
     }
 }
+x
