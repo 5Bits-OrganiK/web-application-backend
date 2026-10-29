@@ -22,4 +22,3 @@ public record CreateShipmentOrderResource(
 
         @NotEmpty(message = "{shipmentOrder.error.lines.notEmpty}")
         List<@NotNull @Valid CreateShipmentOrderLineResource> lines) {}
-x
