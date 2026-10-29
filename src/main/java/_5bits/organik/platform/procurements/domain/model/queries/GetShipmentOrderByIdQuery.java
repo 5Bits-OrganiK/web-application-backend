@@ -7,4 +7,3 @@ public record GetShipmentOrderByIdQuery(Long id) {
         }
     }
 }
-x
