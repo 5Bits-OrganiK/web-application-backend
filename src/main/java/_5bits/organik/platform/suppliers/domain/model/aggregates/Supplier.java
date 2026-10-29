@@ -11,6 +11,7 @@ import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converte
 import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converters.EmailAddressAttributeConverter;
 import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converters.OrganicCertificationAttributeConverter;
 import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converters.PhoneNumberAttributeConverter;
+import _5bits.organik.platform.suppliers.domain.model.commands.CreateSupplierCommand;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -66,4 +67,15 @@ public class Supplier {
     @Column(nullable = false)
     @LastModifiedDate
     private Instant updatedAt;
+
+    protected Supplier() {}
+
+    public Supplier(CreateSupplierCommand command) {
+        this.businessName = command.businessName();
+        this.contactName = command.contactName();
+        this.phoneNumber = command.phoneNumber();
+        this.email = command.email();
+        this.categories = new HashSet<>(command.categories());
+        this.organicCertification = command.organicCertification();
+    }
 }
