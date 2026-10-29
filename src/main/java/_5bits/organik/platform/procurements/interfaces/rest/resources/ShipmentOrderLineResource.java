@@ -8,4 +8,3 @@ public record ShipmentOrderLineResource(
         Integer quantity,
         String lotCode,
         LocalDate expiresOn) {}
-x
