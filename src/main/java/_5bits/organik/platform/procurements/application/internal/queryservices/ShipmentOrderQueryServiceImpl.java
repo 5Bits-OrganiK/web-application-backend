@@ -36,4 +36,3 @@ public class ShipmentOrderQueryServiceImpl implements ShipmentOrderQueryService 
         return shipmentOrderRepository.findAllByMinimarketId(query.minimarketId());
     }
 }
-x
