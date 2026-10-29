@@ -12,3 +12,4 @@ public final class ResponseEntityFromShipmentOrderCommandResultAssembler {
                 .body(ShipmentOrderResourceFromEntityAssembler.toResourceFromEntity(order));
     }
 }
+x
