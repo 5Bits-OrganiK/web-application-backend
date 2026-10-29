@@ -21,4 +21,3 @@ public class ShipmentOrderCommandServiceImpl implements ShipmentOrderCommandServ
         return shipmentOrderRepository.save(new ShipmentOrder(command));
     }
 }
-x
