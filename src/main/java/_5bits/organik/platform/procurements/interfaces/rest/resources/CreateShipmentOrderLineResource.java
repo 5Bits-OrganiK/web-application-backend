@@ -25,4 +25,3 @@ public record CreateShipmentOrderLineResource(
 
         @NotNull(message = "{shipmentOrder.error.expiresOn.notNull}")
         LocalDate expiresOn) {}
-x
