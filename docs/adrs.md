@@ -38,8 +38,8 @@ persistence integration.
 
 ### Decision
 
-Organize the code into one bounded context per area (`iam`, `suppliers`,
-`requisition`, `procurements` and `conservation`), with cross-cutting
+Organize the code into one bounded context per area (`iam`, `inventory`,
+`suppliers`, `requisition`, `procurements` and `conservation`), with cross-cutting
 components in `shared`. Inside each bounded context, use the `interfaces`,
 `application`, `domain`, and `infrastructure` layers. Keep command and query
 service contracts in the application layer and their implementations under
