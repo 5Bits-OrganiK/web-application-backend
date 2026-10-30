@@ -8,6 +8,7 @@ import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converte
 import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converters.ProductIdAttributeConverter;
 import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converters.QuantityAttributeConverter;
 import _5bits.organik.platform.suppliers.infrastructure.persistence.jpa.converters.SupplierIdAttributeConverter;
+import _5bits.organik.platform.suppliers.domain.model.commands.CreateOfferedProductCommand;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -20,7 +21,12 @@ import java.time.LocalDate;
 @Getter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "supplier_id", "lot_code" }, name = OfferedProduct.SUPPLIER_LOT_UNIQUE_CONSTRAINT)
+})
 public class OfferedProduct {
+    public static final String SUPPLIER_LOT_UNIQUE_CONSTRAINT = "uk_offered_product_supplier_lot";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,4 +57,14 @@ public class OfferedProduct {
     @Column(nullable = false)
     @LastModifiedDate
     private Instant updatedAt;
+
+    protected OfferedProduct() {}
+
+    public OfferedProduct(CreateOfferedProductCommand command) {
+        this.supplierId = command.supplierId();
+        this.productId = command.productId();
+        this.lotCode = command.lotCode();
+        this.availableQuantity = command.availableQuantity();
+        this.expiresOn = command.expiresOn();
+    }
 }
