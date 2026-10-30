@@ -24,6 +24,14 @@ following Domain-Driven Design.
   - Command and query services with their application-layer contracts and `UserCommandFailure`.
   - Spring Data JPA `UserRepository` and JPA attribute converters for the value objects.
   - REST resources and assemblers that map commands, queries, and their results to HTTP responses.
+- Inventory REST API:
+  - `POST /api/v1/stock-lots`, `GET /api/v1/stock-lots/{id}` and `GET /api/v1/stock-lots?minimarketId=...`.
+  - `POST /api/v1/inventory-movements`, `GET /api/v1/inventory-movements/{id}` and `GET /api/v1/inventory-movements?stockLotId=...`.
+  - `POST /api/v1/offers`, `GET /api/v1/offers/{id}` and `GET /api/v1/offers?stockLotId=...`.
+- `inventory` bounded context:
+  - `StockLot`, `InventoryMovement` and `Offer` aggregates, their value objects, commands and JPA converters.
+  - Queries, Spring Data JPA repositories, and command and query services with `StockLotCommandFailure`, `InventoryMovementCommandFailure` and `OfferCommandFailure`.
+  - REST resources and assemblers that map commands, queries, and their results to HTTP responses.
 - `suppliers` bounded context: `Supplier` and `OfferedProduct` aggregates, their value objects, commands and JPA converters.
 - `requisition` bounded context: `SupplyRequest` aggregate, its value objects, command and JPA converters.
 - `procurements` bounded context: `ShipmentOrder` aggregate with its `ShipmentOrderLine` entity, value objects, commands to create, accept and reject an order, and JPA converters.
