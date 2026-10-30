@@ -71,4 +71,32 @@ public class ShipmentOrder {
                 .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
         this.status = OrderStatus.PENDING;
     }
+
+    public void accept(UserId decidedBy) {
+        if (decidedBy == null) {
+            throw new IllegalArgumentException("Deciding user is required");
+        }
+        ensurePending();
+        this.status = OrderStatus.ACCEPTED;
+        this.decidedBy = decidedBy;
+        this.decidedAt = Instant.now();
+        this.rejectionReason = null;
+    }
+
+    public void reject(UserId decidedBy, RejectionReason reason) {
+        if (decidedBy == null || reason == null) {
+            throw new IllegalArgumentException("Deciding user and rejection reason are required");
+        }
+        ensurePending();
+        this.status = OrderStatus.REJECTED;
+        this.decidedBy = decidedBy;
+        this.decidedAt = Instant.now();
+        this.rejectionReason = reason;
+    }
+
+    private void ensurePending() {
+        if (this.status != OrderStatus.PENDING) {
+            throw new IllegalStateException("Only pending shipment orders can be decided");
+        }
+    }
 }
