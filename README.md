@@ -2,9 +2,9 @@
 
 ## Overview
 
-OrganiK Platform is the Spring Boot backend of OrganiK, a web application that helps minimarkets of organic products control their inventory, expiration dates, supply and conservation conditions, and connects them with their suppliers. The project is structured around Domain-Driven Design (DDD), organized into bounded contexts (`iam`, `suppliers`, `requisition`, `procurements`, `conservation` and `shared`), using application-layer command/query contracts, a shared `Result` abstraction for command outcomes, and JPA persistence.
+OrganiK Platform is the Spring Boot backend of OrganiK, a web application that helps minimarkets of organic products control their inventory, expiration dates, supply and conservation conditions, and connects them with their suppliers. The project is structured around Domain-Driven Design (DDD), organized into bounded contexts (`iam`, `inventory`, `suppliers`, `requisition`, `procurements`, `conservation` and `shared`), using application-layer command/query contracts, a shared `Result` abstraction for command outcomes, and JPA persistence.
 
-The backend serves the OrganiK web application ([organik-website-v2](https://github.com/5Bits-OrganiK/organik-website-v2)). It is built incrementally: the `iam` bounded context is complete up to its REST API, while the other bounded contexts currently contain their domain model and persistence mapping.
+The backend serves the OrganiK web application ([organik-website-v2](https://github.com/5Bits-OrganiK/organik-website-v2)). It is built incrementally: the `iam` and `inventory` bounded contexts are complete up to their REST APIs, while the other bounded contexts currently contain their domain model and persistence mapping.
 
 ## Features
 
@@ -12,6 +12,9 @@ The backend serves the OrganiK web application ([organik-website-v2](https://git
 - Retrieve a user by its identifier
 - Retrieve a user by email address
 - Create (persist) a new user with a pending invitation
+- Register stock lots and list them by minimarket, flagging lots at or below their minimum stock
+- Register inventory movements (entry, exit, adjustment and waste) on a stock lot and list them by lot
+- Create offers for a stock lot that end on or before its expiration date, and list them by lot
 - Domain model (aggregates, value objects, commands and JPA converters) for suppliers and their offered products, supply requests, shipment orders and storage conservation
 - Map command and query outcomes to HTTP responses through interface-layer response translators
 - Custom Hibernate naming strategy to convert identifiers to snake_case and plural table names
@@ -21,6 +24,7 @@ The backend serves the OrganiK web application ([organik-website-v2](https://git
 | Bounded context | Responsibility                                      | Current state                                    |
 |-----------------|-----------------------------------------------------|--------------------------------------------------|
 | `iam`           | Users, roles and invitation status                  | Domain, application and REST API                 |
+| `inventory`     | Stock lots, inventory movements and offers          | Domain, application and REST API                 |
 | `suppliers`     | Suppliers and the products they offer               | Domain and persistence mapping                   |
 | `requisition`   | Supply requests shared by minimarkets               | Domain and persistence mapping                   |
 | `procurements`  | Shipment orders and their acceptance or rejection   | Domain and persistence mapping                   |
@@ -106,6 +110,10 @@ http://localhost:8080/swagger-ui/index.html
 - Invalid request bodies (`POST /api/v1/users`) return `400 Bad Request`.
 - Duplicate user creation returns `409 Conflict` with a localized `ProblemDetail` payload.
 - Not-found lookups (`GET /api/v1/users/{id}` and `GET /api/v1/users?email=...`) return `404 Not Found` with a localized `ProblemDetail` payload.
+- Inventory endpoints (`/api/v1/stock-lots`, `/api/v1/inventory-movements` and `/api/v1/offers`) return `400 Bad Request` for invalid bodies or query parameters and `404 Not Found` for unknown identifiers or stock lots.
+- Registering a stock lot with a lot code already used by the minimarket returns `409 Conflict`.
+- An exit or waste movement larger than the units in the stock lot returns `409 Conflict`.
+- An offer that ends after the expiration date of its stock lot returns `409 Conflict`.
 
 ## Getting started (quick)
 
