@@ -8,13 +8,17 @@ import _5bits.organik.platform.procurements.domain.model.queries.GetShipmentOrde
 import _5bits.organik.platform.procurements.domain.model.valueobjects.MinimarketId;
 import _5bits.organik.platform.procurements.domain.model.valueobjects.SupplierId;
 import _5bits.organik.platform.procurements.interfaces.rest.resources.CreateShipmentOrderResource;
+import _5bits.organik.platform.procurements.interfaces.rest.resources.AcceptShipmentOrderResource;
+import _5bits.organik.platform.procurements.interfaces.rest.resources.RejectShipmentOrderResource;
 import _5bits.organik.platform.procurements.interfaces.rest.transform.CreateShipmentOrderCommandFromResourceAssembler;
 import _5bits.organik.platform.procurements.interfaces.rest.transform.ResponseEntityFromShipmentOrderCommandResultAssembler;
 import _5bits.organik.platform.procurements.interfaces.rest.transform.ResponseEntityFromShipmentOrderQueryResultAssembler;
+import _5bits.organik.platform.procurements.interfaces.rest.transform.ShipmentOrderDecisionCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(value = "/api/v1/shipment-orders", produces = APPLICATION_JSON_VALUE)
-@Tag(name = "Shipment Orders", description = "Create and query shipment orders")
+@Tag(name = "Shipment Orders", description = "Create, query and decide shipment orders")
 public class ShipmentOrdersController {
     private static final int MAX_QUERY_PARAM_LENGTH = 256;
     private static final Pattern ID_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]+$");
@@ -52,8 +56,35 @@ public class ShipmentOrdersController {
     @PostMapping
     public ResponseEntity<?> createShipmentOrder(@Valid @RequestBody CreateShipmentOrderResource resource) {
         var command = CreateShipmentOrderCommandFromResourceAssembler.toCommandFromResource(resource);
-        var createdOrder = commandService.handle(command);
-        return ResponseEntityFromShipmentOrderCommandResultAssembler.created(createdOrder);
+        var result = commandService.handle(command);
+        return ResponseEntityFromShipmentOrderCommandResultAssembler.toResponseEntityFromResult(
+                result, messageSource, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Accept a pending shipment order")
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<?> acceptShipmentOrder(
+            @PathVariable Long id, @Valid @RequestBody AcceptShipmentOrderResource resource) {
+        if (id == null || id <= 0) {
+            return ResponseEntityFromShipmentOrderQueryResultAssembler.badRequest(
+                    messageSource, "shipmentOrder.error.id.invalid");
+        }
+        var command = ShipmentOrderDecisionCommandFromResourceAssembler.toAcceptCommand(id, resource);
+        return ResponseEntityFromShipmentOrderCommandResultAssembler.toResponseEntityFromResult(
+                commandService.handle(command), messageSource, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Reject a pending shipment order")
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<?> rejectShipmentOrder(
+            @PathVariable Long id, @Valid @RequestBody RejectShipmentOrderResource resource) {
+        if (id == null || id <= 0) {
+            return ResponseEntityFromShipmentOrderQueryResultAssembler.badRequest(
+                    messageSource, "shipmentOrder.error.id.invalid");
+        }
+        var command = ShipmentOrderDecisionCommandFromResourceAssembler.toRejectCommand(id, resource);
+        return ResponseEntityFromShipmentOrderCommandResultAssembler.toResponseEntityFromResult(
+                commandService.handle(command), messageSource, HttpStatus.OK);
     }
 
     @Operation(summary = "Get a shipment order by ID")
