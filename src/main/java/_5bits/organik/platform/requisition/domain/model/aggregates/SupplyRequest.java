@@ -12,6 +12,7 @@ import _5bits.organik.platform.requisition.infrastructure.persistence.jpa.conver
 import _5bits.organik.platform.requisition.infrastructure.persistence.jpa.converters.QuantityAttributeConverter;
 import _5bits.organik.platform.requisition.infrastructure.persistence.jpa.converters.RequestReasonAttributeConverter;
 import _5bits.organik.platform.requisition.infrastructure.persistence.jpa.converters.SupplierIdAttributeConverter;
+import _5bits.organik.platform.requisition.domain.model.commands.CreateSupplyRequestCommand;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -67,4 +68,17 @@ public class SupplyRequest {
     @Column(nullable = false)
     @LastModifiedDate
     private Instant updatedAt;
+
+    protected SupplyRequest() {}
+
+    public SupplyRequest(CreateSupplyRequestCommand command) {
+        this.productId = command.productId();
+        this.supplierId = command.supplierId();
+        this.minimarketId = command.minimarketId();
+        this.quantity = command.quantity();
+        this.reason = command.reason();
+        this.requiredDate = command.requiredDate();
+        this.priority = command.priority();
+        this.status = RequestStatus.PENDING;
+    }
 }
